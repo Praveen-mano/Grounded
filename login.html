@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grounded - Secure Access</title>
+    <style>
+        /* --- OFFLINE STYLES --- */
+        :root {
+            --color-green: #1B4332;       
+            --color-green-hover: #2D6A4F; 
+            --color-brown: #6C584C;       
+            --color-bg: #F8FAF8;          
+            --color-error: #dc2626;
+            --color-success: #16a34a;
+        }
+
+        body {
+            font-family: sans-serif;
+            background-color: var(--color-bg);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .logo {
+            color: var(--color-green);
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .tagline {
+            color: var(--color-brown);
+            font-size: 14px;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--color-green);
+            background-color: #f0fdf4;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: var(--color-green);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .switch-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .link {
+            color: var(--color-green);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .message-box {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            display: none; 
+        }
+        .error { background-color: #fee2e2; color: var(--color-error); border: 1px solid #fecaca; }
+        .success { background-color: #dcfce7; color: var(--color-success); border: 1px solid #bbf7d0; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            
+            <div class="logo">GROUNDED</div>
+            <h3 class="tagline" id="pageTitle">Farm Login</h3>
+
+            <div id="notification" class="message-box"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="loginUser" placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPass" placeholder="Enter Password" required>
+                </div>
+                
+                <button type="submit" class="btn" id="loginBtn">Access Dashboard</button>
+
+                <div class="switch-text">
+                    New User? <span class="link" onclick="toggleView()">Create Profile</span>
+                </div>
+            </form>
+
+            <form id="registerForm" class="hidden">
+                <div class="form-group">
+                    <label>Pick a Username</label>
+                    <input type="text" id="regUser" placeholder="Max 15 chars" maxlength="15" required>
+                </div>
+                <div class="form-group">
+                    <label>Set Password</label>
+                    <input type="password" id="regPass" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="regConfirm" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn" id="regBtn">Register User</button>
+
+                <div class="switch-text">
+                    Has Account? <span class="link" onclick="toggleView()">Login Here</span>
+                </div>
+            </form>
+           <button onclick="viewUsers()" style="margin-top:20px; background:#666; color:white; padding:5px 10px; border:none; border-radius:5px; cursor:pointer;">
+             View Users (Safe)
+           </button>
+
+        </div>
+    </div>
+
+    <script>
+        // --- UI LOGIC ---
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const notification = document.getElementById('notification');
+        const title = document.getElementById('pageTitle');
+
+        function toggleView() {
+            clearMessage();
+            if (loginForm.classList.contains('hidden')) {
+                // Show Login
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                title.innerText = "Farm Login";
+            } else {
+                // Show Register
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                title.innerText = "Create New Profile";
+            }
+        }
+
+        function showMessage(msg, type) {
+            notification.innerText = msg;
+            notification.className = "message-box " + type; 
+            notification.style.display = "block";
+        }
+
+        function clearMessage() {
+            notification.style.display = "none";
+        }
+
+        // --- LOCAL STORAGE LOGIC ---
+
+        function getStoredUsers() {
+            const users = localStorage.getItem('grounded_users');
+            return users ? JSON.parse(users) : {};
+        }
+
+        function saveStoredUsers(usersObj) {
+            localStorage.setItem('grounded_users', JSON.stringify(usersObj));
+        }
+
+        // 1. HANDLE REGISTER SUBMIT
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearMessage();
+
+            const btn = document.getElementById('regBtn');
+            const user = document.getElementById('regUser').value.trim();
+            const pass = document.getElementById('regPass').value;
+            const confirm = document.getElementById('regConfirm').value;
+
+            // Basic Validation
+            if (pass !== confirm) {
+                showMessage("Passwords do not match!", "error");
+                return;
+            }
+            if (user === "") {
+                showMessage("Username cannot be empty", "error");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Saving...";
+
+            setTimeout(() => {
+                const users = getStoredUsers();
+
+                if (users.hasOwnProperty(user)) {
+                    showMessage("Username already taken on this device.", "error");
+                } else {
+                    users[user] = pass; 
+                    saveStoredUsers(users);
+                    
+                    showMessage("Profile Saved! Please Login.", "success");
+                    setTimeout(() => toggleView(), 1500); 
+                }
+
+                btn.disabled = false;
+                btn.innerText = "Register User";
+            }, 500);
+        });
+
+        // 2. HANDLE LOGIN SUBMIT
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            clearMessage();
+            
+            const btn = document.getElementById('loginBtn');
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value;
+
+            btn.disabled = true;
+            btn.innerText = "Verifying...";
+
+            setTimeout(() => {
+                const users = getStoredUsers();
+
+                if (users.hasOwnProperty(user)) {
+                    if (users[user] === pass) {
+                        // SUCCESS!
+                        localStorage.setItem('grounded_active_user', user); 
+                        window.location.href = "sampl.html"; 
+                    } else {
+                        showMessage("Incorrect Password.", "error");
+                    }
+                } else {
+                    showMessage("User not found on this device.", "error");
+                }
+              
+                btn.disabled = false;
+                btn.innerText = "Access Dashboard";
+            }, 500);
+        });
+
+        // --- UPDATED VIEW USERS FUNCTION ---
+        function viewUsers() {
+            const users = localStorage.getItem('grounded_users');
+            
+            if (users) {
+                const usersObj = JSON.parse(users);
+                
+                // Object.keys() extracts only the usernames (keys), ignoring passwords
+                const userList = Object.keys(usersObj);
+                
+                if (userList.length > 0) {
+                    // .join('\n') puts each name on a new line
+                    alert("Registered Users:\n\n" + userList.join('\n'));
+                } else {
+                    alert("Database exists but has no users.");
+                }
+            } else {
+                alert("Database is empty.");
+            }
+        }
+         
+    </script>
+</body>
+</html>
